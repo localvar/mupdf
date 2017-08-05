@@ -263,6 +263,7 @@ static struct {
 
 static void usage(void)
 {
+#ifndef HIDE_USAGE
 	fprintf(stderr,
 		"mudraw version " FZ_VERSION "\n"
 		"Usage: mudraw [options] file [pages]\n"
@@ -314,6 +315,7 @@ static void usage(void)
 		"\n"
 		"\tpages\tcomma separated list of page numbers and ranges\n"
 		);
+#endif
 	exit(1);
 }
 
@@ -1301,6 +1303,42 @@ static void apply_layer_config(fz_context *ctx, fz_document *doc, const char *lc
 	}
 }
 
+
+
+static fz_font* font_kai = NULL;
+static fz_font* font_sun = NULL;
+static fz_font* font_hei = NULL;
+
+static void init_cjk_font(fz_context* ctx)
+{
+	font_kai = fz_new_font_from_file(ctx, "", "/dev/shm/kai.ttf", 0, 0);
+	font_sun = fz_new_font_from_file(ctx, "", "/dev/shm/sun.ttf", 0, 0);
+	font_hei = fz_new_font_from_file(ctx, "", "/dev/shm/hei.ttf", 0, 0);
+}
+
+static fz_font* load_cjk_font(fz_context* ctx, const char* name, int ros, int serif)
+{
+	char lname[64];
+	strncpy(lname, name, 64);
+	lname[63] = 0;
+	char *p;
+	for(p = lname; *p != 0; p++)
+		*p = tolower(*p);
+	
+	if(strstr(lname, "kaiti") != NULL || strstr(lname, "simkai") != NULL)
+		return font_kai;
+	if(strstr(lname, "song") != NULL || strstr(lname, "simsun") != NULL)
+		return font_sun;
+	return font_hei;
+}
+
+static fz_font* load_fallback_font(fz_context* ctx, int script, int language, int serif, int bold, int italic)
+{
+	return font_hei;
+}
+
+
+
 #ifdef MUDRAW_STANDALONE
 int main(int argc, char **argv)
 #else
@@ -1427,6 +1465,8 @@ int mudraw_main(int argc, char **argv)
 	fz_set_text_aa_level(ctx, alphabits_text);
 	fz_set_graphics_aa_level(ctx, alphabits_graphics);
 	fz_set_graphics_min_line_width(ctx, min_line_width);
+	init_cjk_font(ctx);
+	fz_install_load_system_font_funcs(ctx, NULL, load_cjk_font, load_fallback_font);
 
 #ifndef DISABLE_MUTHREADS
 	if (bgprint.active)

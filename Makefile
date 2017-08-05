@@ -14,7 +14,7 @@ include Makethird
 # Do not specify CFLAGS or LIBS on the make invocation line - specify
 # XCFLAGS or XLIBS instead. Make ignores any lines in the makefile that
 # set a variable that was set on the command line.
-CFLAGS += $(XCFLAGS) -Iinclude -Igenerated
+CFLAGS += $(XCFLAGS) -Iinclude -Igenerated -DTOFU -DNOCJK
 LIBS += $(XLIBS) -lm
 
 LIBS += $(FREETYPE_LIBS)
@@ -180,39 +180,39 @@ generate: $(NAME_GEN)
 
 HEXDUMP_EXE := $(OUT)/scripts/hexdump.exe
 
-FONT_BIN_DROID := $(wildcard resources/fonts/droid/*.ttf)
-FONT_BIN_NOTO := $(wildcard resources/fonts/noto/*.ttf)
-FONT_BIN_HAN := $(wildcard resources/fonts/han/*.otf)
+#FONT_BIN_DROID := $(wildcard resources/fonts/droid/*.ttf)
+#FONT_BIN_NOTO := $(wildcard resources/fonts/noto/*.ttf)
+#FONT_BIN_HAN := $(wildcard resources/fonts/han/*.otf)
 FONT_BIN_URW := $(wildcard resources/fonts/urw/*.cff)
-FONT_BIN_SIL := $(wildcard resources/fonts/sil/*.cff)
+#FONT_BIN_SIL := $(wildcard resources/fonts/sil/*.cff)
 
-FONT_GEN_DROID := $(subst resources/fonts/droid/, generated/, $(addsuffix .c, $(basename $(FONT_BIN_DROID))))
-FONT_GEN_NOTO := $(subst resources/fonts/noto/, generated/, $(addsuffix .c, $(basename $(FONT_BIN_NOTO))))
-FONT_GEN_HAN := $(subst resources/fonts/han/, generated/, $(addsuffix .c, $(basename $(FONT_BIN_HAN))))
+#FONT_GEN_DROID := $(subst resources/fonts/droid/, generated/, $(addsuffix .c, $(basename $(FONT_BIN_DROID))))
+#FONT_GEN_NOTO := $(subst resources/fonts/noto/, generated/, $(addsuffix .c, $(basename $(FONT_BIN_NOTO))))
+#FONT_GEN_HAN := $(subst resources/fonts/han/, generated/, $(addsuffix .c, $(basename $(FONT_BIN_HAN))))
 FONT_GEN_URW := $(subst resources/fonts/urw/, generated/, $(addsuffix .c, $(basename $(FONT_BIN_URW))))
-FONT_GEN_SIL := $(subst resources/fonts/sil/, generated/, $(addsuffix .c, $(basename $(FONT_BIN_SIL))))
+#FONT_GEN_SIL := $(subst resources/fonts/sil/, generated/, $(addsuffix .c, $(basename $(FONT_BIN_SIL))))
 
-FONT_BIN := $(FONT_BIN_DROID) $(FONT_BIN_NOTO) $(FONT_BIN_HAN) $(FONT_BIN_URW) $(FONT_BIN_SIL)
-FONT_GEN := $(FONT_GEN_DROID) $(FONT_GEN_NOTO) $(FONT_GEN_HAN) $(FONT_GEN_URW) $(FONT_GEN_SIL)
+FONT_BIN := $(FONT_BIN_URW) # $(FONT_BIN_DROID) $(FONT_BIN_NOTO) $(FONT_BIN_HAN) $(FONT_BIN_URW) $(FONT_BIN_SIL)
+FONT_GEN := $(FONT_GEN_URW) # $(FONT_GEN_DROID) $(FONT_GEN_NOTO) $(FONT_GEN_HAN) $(FONT_GEN_URW) $(FONT_GEN_SIL)
 FONT_OBJ := $(FONT_GEN:%.c=$(OUT)/%.o)
 
-generated/%.c : resources/fonts/droid/%.ttf $(HEXDUMP_EXE) | generated
-	$(QUIET_GEN) $(HEXDUMP_EXE) $@ $<
-generated/%.c : resources/fonts/noto/%.ttf $(HEXDUMP_EXE) | generated
-	$(QUIET_GEN) $(HEXDUMP_EXE) $@ $<
-generated/%.c : resources/fonts/han/%.otf $(HEXDUMP_EXE) | generated
-	$(QUIET_GEN) $(HEXDUMP_EXE) $@ $<
+#generated/%.c : resources/fonts/droid/%.ttf $(HEXDUMP_EXE) | generated
+#	$(QUIET_GEN) $(HEXDUMP_EXE) $@ $<
+#generated/%.c : resources/fonts/noto/%.ttf $(HEXDUMP_EXE) | generated
+#	$(QUIET_GEN) $(HEXDUMP_EXE) $@ $<
+#generated/%.c : resources/fonts/han/%.otf $(HEXDUMP_EXE) | generated
+#	$(QUIET_GEN) $(HEXDUMP_EXE) $@ $<
 generated/%.c : resources/fonts/urw/%.cff $(HEXDUMP_EXE) | generated
 	$(QUIET_GEN) $(HEXDUMP_EXE) $@ $<
-generated/%.c : resources/fonts/sil/%.cff $(HEXDUMP_EXE) | generated
-	$(QUIET_GEN) $(HEXDUMP_EXE) $@ $<
+#generated/%.c : resources/fonts/sil/%.cff $(HEXDUMP_EXE) | generated
+#	$(QUIET_GEN) $(HEXDUMP_EXE) $@ $<
 
 $(FONT_OBJ) : $(FONT_GEN)
-$(FONT_GEN_DROID) : $(FONT_BIN_DROID)
-$(FONT_GEN_NOTO) : $(FONT_BIN_NOTO)
-$(FONT_GEN_HAN) : $(FONT_BIN_HAN)
+#$(FONT_GEN_DROID) : $(FONT_BIN_DROID)
+#$(FONT_GEN_NOTO) : $(FONT_BIN_NOTO)
+#$(FONT_GEN_HAN) : $(FONT_BIN_HAN)
 $(FONT_GEN_URW) : $(FONT_BIN_URW)
-$(FONT_GEN_SIL) : $(FONT_BIN_SIL)
+#$(FONT_GEN_SIL) : $(FONT_BIN_SIL)
 
 ifneq "$(CROSSCOMPILE)" "yes"
 $(FONT_GEN) : $(HEXDUMP_EXE)
@@ -324,6 +324,12 @@ $(MUTOOL_OBJ) : $(FITZ_HDR) $(PDF_HDR)
 $(MUTOOL_EXE) : $(MUTOOL_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(THREAD_LIB)
 	$(LINK_CMD) $(PTHREAD_LIBS)
 
+MUPDF2PNG_EXE := $(OUT)/pdf2png
+MUPDF2PNG_OBJ := $(OUT)/source/tools/mupdf2png.o
+$(MUPDF2PNG_OBJ) : $(FITZ_HDR)
+$(MUPDF2PNG_EXE) : $(MUPDF2PNG_OBJ) $(MUPDF_LIB) $(THIRD_LIB) $(THREAD_LIB)
+	$(LINK_CMD) $(PTHREAD_LIBS)
+
 MURASTER_EXE := $(OUT)/muraster
 MURASTER_OBJ := $(OUT)/source/tools/muraster.o
 $(MURASTER_OBJ) : $(FITZ_HDR)
@@ -378,6 +384,7 @@ MUVIEW_EXE := $(MUVIEW_X11_EXE) $(MUVIEW_WIN32_EXE) $(MUVIEW_GLFW_EXE)
 MUVIEW_CURL_EXE := $(MUVIEW_X11_CURL_EXE) $(MUVIEW_WIN32_CURL_EXE)
 
 INSTALL_APPS := $(MUTOOL_EXE) $(MUVIEW_EXE)
+INSTALL_APPS += $(MUPDF2PNG_EXE)
 INSTALL_APPS += $(MURASTER_EXE)
 INSTALL_APPS += $(MUVIEW_CURL_EXE)
 INSTALL_APPS += $(MUJSTEST_EXE)
